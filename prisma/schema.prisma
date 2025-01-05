@@ -1,0 +1,336 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id                     Int                      @id @default(autoincrement())
+  full_name              String?                  @db.VarChar(255)
+  user_name              String?                  @db.VarChar(255)
+  business_name          String?                  @db.VarChar(255)
+  email                  String?                  @db.VarChar(255)
+  phone                  String?                  @db.VarChar(255)
+  country                String?                  @db.VarChar(255)
+  address                String?                  @db.VarChar(255)
+  password               String?                  @db.VarChar(255)
+  date_of_birth          DateTime?                @db.DateTime()
+  gender                 Gender                   @default(OTHER)
+  marital_status         Martial_status           @default(OTHER)
+  school_attended        String?                  @db.VarChar(255)
+  otp                    String?                  @db.VarChar(255)
+  profile_picture        String?                  @db.VarChar(255)
+  longitude              Float?
+  latitude               Float?
+  first_key_word         String?                  @db.VarChar(255)
+  second_key_word        String?                  @db.VarChar(255)
+  third_key_word         String?                  @db.VarChar(255)
+  stripe_account_id      String?                  @db.VarChar(255)
+  user_type              User_type?
+  fcm_token              String?                  @db.LongText
+  is_private             Boolean?                 @default(false)
+  is_notification        Boolean?                 @default(true)
+  is_deleted             Boolean?                 @default(false)
+  is_verified            Boolean?                 @default(false)
+  is_completed           Boolean?                 @default(false)
+  createdAt              DateTime                 @default(now()) @db.Timestamp(0)
+  updatedAt              DateTime?                @updatedAt
+  user_sessions          user_sessions[]
+  feed_likes             feed_likes[]
+  feed_comments          feed_comments[]
+  feeds                  feeds[]
+  questionnaires         questionnaires[]
+  questionnaires_answers questionnaires_answers[]
+  services               services[]
+  crowd_fundings         crowd_fundings[]
+  user_one               chats[]                  @relation(name: "user_one")
+  user_two               chats[]                  @relation(name: "user_two")
+  chat_settings          chat_settings[]
+  sender                 chat_messages[]          @relation(name: "sender")
+  recipient              chat_messages[]          @relation(name: "recipient")
+  notifications_sender   notifications[]          @relation(name: "sender")
+  notifications_receiver notifications[]          @relation(name: "receiver")
+  blocked_user           block_user[]             @relation(name: "blocked_user")
+  blocked_by             block_user[]             @relation(name: "blocked_by")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum Martial_status {
+  SINGLE
+  MARRIED
+  OTHER
+}
+
+enum User_type {
+  USER
+  BUSINESS
+}
+
+model user_sessions {
+  id            Int        @id @default(autoincrement())
+  user_id       Int?
+  user_type     User_type?
+  refresh_token String?    @db.VarChar(255)
+  createdAt     DateTime   @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime?  @updatedAt
+  users         users?     @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "FK_USER_SESSION_ID")
+}
+
+model block_user {
+  id              Int       @id @default(autoincrement())
+  blocked_user_id Int
+  blocked_by_id   Int
+  createdAt       DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime? @updatedAt
+  blocked_user    users     @relation(fields: [blocked_user_id], name: "blocked_user", references: [id], onDelete: Cascade)
+  blocked_by      users     @relation(fields: [blocked_by_id], name: "blocked_by", references: [id], onDelete: Cascade)
+}
+
+model feeds {
+  id            Int             @id @default(autoincrement())
+  about         String?         @db.LongText
+  user_id       Int
+  createdAt     DateTime        @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime        @updatedAt
+  users         users?          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  feed_images   feed_images[]
+  feed_likes    feed_likes[]
+  feed_comments feed_comments[]
+}
+
+model questionnaires {
+  id                     Int                      @id @default(autoincrement())
+  question_text          String?                  @db.LongText
+  user_id                Int
+  createdAt              DateTime                 @default(now()) @db.Timestamp(0)
+  updatedAt              DateTime                 @updatedAt
+  users                  users?                   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  questionnaires_answers questionnaires_answers[]
+}
+
+model feed_images {
+  id        Int      @id @default(autoincrement())
+  feed_id   Int
+  image     String   @db.VarChar(1000)
+  createdAt DateTime @default(now()) @db.Timestamp(0)
+  updatedAt DateTime @updatedAt
+  feeds     feeds?   @relation(fields: [feed_id], references: [id], onDelete: Cascade)
+}
+
+model feed_likes {
+  id        Int      @id @default(autoincrement())
+  feed_id   Int
+  user_id   Int
+  createdAt DateTime @default(now()) @db.Timestamp(0)
+  updatedAt DateTime @updatedAt
+  feeds     feeds?   @relation(fields: [feed_id], references: [id], onDelete: Cascade)
+  users     users?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model feed_comments {
+  id           Int      @id @default(autoincrement())
+  feed_id      Int
+  user_id      Int
+  comment_text String?  @db.LongText
+  createdAt    DateTime @default(now()) @db.Timestamp(0)
+  updatedAt    DateTime @updatedAt
+  feeds        feeds?   @relation(fields: [feed_id], references: [id], onDelete: Cascade)
+  users        users?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model questionnaires_answers {
+  id                Int             @id @default(autoincrement())
+  questionnaires_id Int
+  user_id           Int
+  answer_text       String?         @db.LongText
+  createdAt         DateTime        @default(now()) @db.Timestamp(0)
+  updatedAt         DateTime        @updatedAt
+  questionnaires    questionnaires? @relation(fields: [questionnaires_id], references: [id], onDelete: Cascade)
+  users             users?          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model terms_and_conditions {
+  id        Int      @id @default(autoincrement())
+  data      String?  @db.LongText
+  createdAt DateTime @default(now()) @db.Timestamp(0)
+  updatedAt DateTime @updatedAt
+}
+
+model privacy_policy {
+  id        Int      @id @default(autoincrement())
+  data      String?  @db.LongText
+  createdAt DateTime @default(now()) @db.Timestamp(0)
+  updatedAt DateTime @updatedAt
+}
+
+model about_app {
+  id        Int      @id @default(autoincrement())
+  data      String?  @db.LongText
+  createdAt DateTime @default(now()) @db.Timestamp(0)
+  updatedAt DateTime @updatedAt
+}
+
+model service_categories {
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(1000)
+  description String?    @db.LongText
+  icon_image  String?    @db.VarChar(1000)
+  is_active   Boolean    @default(true)
+  createdAt   DateTime   @default(now()) @db.Timestamp(0)
+  updatedAt   DateTime   @updatedAt
+  services    services[]
+}
+
+model services {
+  id                  Int                 @id @default(autoincrement())
+  business_id         Int
+  service_category_id Int
+  longitude           String?
+  latitude            String?
+  country             String?
+  service_name        String              @db.VarChar(1000)
+  description         String?             @db.LongText
+  is_active           Boolean             @default(true)
+  createdAt           DateTime            @default(now()) @db.Timestamp(0)
+  updatedAt           DateTime            @updatedAt
+  users               users?              @relation(fields: [business_id], references: [id], onDelete: Cascade)
+  service_categories  service_categories? @relation(fields: [service_category_id], references: [id], onDelete: Cascade)
+  service_images      service_images[]
+}
+
+model service_images {
+  id               Int       @id @default(autoincrement())
+  service_id       Int
+  image            String    @db.VarChar(1000)
+  createdAt        DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt        DateTime  @updatedAt
+  services         services? @relation(fields: [service_id], references: [id], onDelete: Cascade)
+  crowd_fundingsId Int?
+}
+
+model crowd_fundings {
+  id                     Int                   @id @default(autoincrement())
+  user_id                Int
+  patient_name           String                @db.VarChar(1000)
+  patient_gender         String                @db.VarChar(1000)
+  date_of_birth          DateTime?             @db.DateTime()
+  end_datetime           DateTime?             @db.DateTime()
+  hospital_name          String                @db.LongText
+  amount                 String                @db.VarChar(1000)
+  patient_account_number String?               @db.VarChar(1000)
+  bank_name              String?               @db.VarChar(1000)
+  next_of_kin_name       String                @db.VarChar(1000)
+  next_of_kin_relation   String                @db.VarChar(1000)
+  next_of_kin_phone      String                @db.VarChar(1000)
+  title                  String                @db.VarChar(1000)
+  description            String?               @db.LongText
+  is_active              Boolean               @default(true)
+  createdAt              DateTime              @default(now()) @db.Timestamp(0)
+  updatedAt              DateTime              @updatedAt
+  users                  users?                @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  crowd_funding_media    crowd_funding_media[]
+  donations              donations[]
+}
+
+model crowd_funding_media {
+  id                  Int             @id @default(autoincrement())
+  crowd_funding_id    Int
+  crowd_funding_media String          @db.VarChar(1000)
+  media_type          String          @db.VarChar(1000)
+  createdAt           DateTime        @default(now()) @db.Timestamp(0)
+  updatedAt           DateTime        @updatedAt
+  crowd_fundings      crowd_fundings? @relation(fields: [crowd_funding_id], references: [id], onDelete: Cascade)
+}
+
+model donations {
+  id               Int             @id @default(autoincrement())
+  crowd_funding_id Int
+  user_id          Int
+  donated_amount   String          @db.VarChar(1000)
+  is_paid          Boolean         @default(false)
+  createdAt        DateTime        @default(now()) @db.Timestamp(0)
+  updatedAt        DateTime        @updatedAt
+  crowd_fundings   crowd_fundings? @relation(fields: [crowd_funding_id], references: [id], onDelete: Cascade)
+}
+
+model chats {
+  id            Int             @id @default(autoincrement())
+  user_one_id   Int
+  user_two_id   Int
+  createdAt     DateTime        @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime        @updatedAt
+  user_one      users?          @relation(fields: [user_one_id], name: "user_one", references: [id], onDelete: Cascade)
+  user_two      users?          @relation(fields: [user_two_id], name: "user_two", references: [id], onDelete: Cascade)
+  chat_settings chat_settings[]
+  chat_messages chat_messages[]
+}
+
+model chat_settings {
+  id              Int      @id @default(autoincrement())
+  user_id         Int
+  chat_id         Int
+  last_message_id Int      @default(0)
+  is_deleted      Boolean
+  createdAt       DateTime @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime @updatedAt
+  users           users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  chats           chats    @relation(fields: [chat_id], references: [id], onDelete: Cascade)
+}
+
+model chat_messages {
+  id           Int      @id @default(autoincrement())
+  chat_id      Int
+  sender_id    Int
+  message      String?  @db.LongText
+  recipient_id Int
+  is_read      Boolean
+  createdAt    DateTime @default(now()) @db.Timestamp(0)
+  updatedAt    DateTime @updatedAt
+  sender       users    @relation(fields: [sender_id], name: "sender", references: [id], onDelete: Cascade)
+  recipient    users    @relation(fields: [recipient_id], name: "recipient", references: [id], onDelete: Cascade)
+  chats        chats?   @relation(fields: [chat_id], references: [id], onDelete: Cascade)
+}
+
+model notifications {
+  id        Int      @id @default(autoincrement())
+  title     String?  @db.VarChar(255)
+  message   String?  @db.LongText
+  user_id   Int
+  sender_id Int?
+  metadata  String?  @db.VarChar(255)
+  is_read   Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.Timestamp(0)
+  updatedAt DateTime @updatedAt
+  users     users?   @relation(fields: [user_id], name: "receiver", references: [id], onDelete: Cascade)
+  senders   users?   @relation(fields: [sender_id], name: "sender", references: [id], onDelete: Cascade)
+}
+
+model admins {
+  id              Int              @id @default(autoincrement())
+  email           String?          @db.VarChar(255)
+  password        String?          @db.VarChar(255)
+  otp             String?          @db.VarChar(255)
+  profile_picture String?          @db.VarChar(255)
+  fcm_token       String?          @db.LongText
+  is_notification Boolean?         @default(true)
+  createdAt       DateTime         @default(now()) @db.Timestamp(0)
+  updatedAt       DateTime?        @updatedAt
+  admin_sessions  admin_sessions[]
+}
+
+model admin_sessions {
+  id            Int       @id @default(autoincrement())
+  admin_id      Int?
+  refresh_token String?   @db.VarChar(255)
+  createdAt     DateTime  @default(now()) @db.Timestamp(0)
+  updatedAt     DateTime? @updatedAt
+  admins        admins?   @relation(fields: [admin_id], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "FK_ADMIN_SESSION_ID")
+}

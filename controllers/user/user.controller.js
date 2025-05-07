@@ -275,7 +275,9 @@ const loginUser = async (req, res) => {
     }
 
     const access_token = tokenService.generateAccessToken(user.id);
+    console.log(access_token);
     const refresh_token = tokenService.generateRefreshToken(user.id);
+    console.log(refresh_token);
 
     await prisma.user_sessions.create({
       data: {
@@ -608,6 +610,10 @@ const getMe = async (req, res) => {
     delete newUser.full_name;
     delete newUser.password;
     delete newUser.otp;
+    
+    console.log(newUser);
+
+    // newUser.date_of_birth=newUser.date_of_birth.toString();
 
     // users.findFirst({
     //   where: {
@@ -625,6 +631,7 @@ const getMe = async (req, res) => {
     const response = okResponse(newUser[0], "User Data");
     return res.status(response.status.code).json(response);
   } catch (error) {
+    console.log(error);
     const response = serverErrorResponse(error.message);
     return res.status(response.status.code).json(response);
   }
@@ -700,15 +707,18 @@ const createProfile = async (req, res) => {
   console.log(req.user_profile_picture);
   const { user } = req.user;
   try {
-    await prisma.users.update({
-      where: {
-        id: Number(user.id),
-      },
-      data: {
-        is_completed: true,
-        ...req.body,
-      },
-    });
+    const { date_of_birth, ...otherData } = req.body;
+
+await prisma.users.update({
+  where: {
+    id: Number(user.id),
+  },
+  data: {
+    is_completed: true,
+    ...otherData,
+    date_of_birth: date_of_birth ? new Date(date_of_birth) : undefined,
+  },
+});
 
     const access_token = tokenService.generateAccessToken(user.id);
     const refresh_token = tokenService.generateRefreshToken(user.id);
@@ -724,10 +734,13 @@ const createProfile = async (req, res) => {
       { access_token, refresh_token },
       "Your profile created successfully."
     );
+    console.log("Profile Created Succesffulllyy",response);
     return res.status(response.status.code).json(response);
   } catch (error) {
     const response = serverErrorResponse(error.message);
+    console.log(response);
     return res.status(response.status.code).json(response);
+    
   }
 };
 

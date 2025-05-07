@@ -128,6 +128,7 @@ const createUserSchema = Joi.object({
   body: Joi.object({
     full_name: Joi.string(),
     user_name: Joi.string(),
+    date_of_birth: Joi.date(),
     business_name: Joi.string(),
     phone: Joi.string().required(),
     country: Joi.string().valid("Nigeria", "Ghana", "South Africa").required(),

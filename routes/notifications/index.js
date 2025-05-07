@@ -16,4 +16,5 @@ router.patch("/:id", verifyToken, readNotifications);
 router.get("/", verifyToken, getAllNotifications);
 router.post("/all", verifyAdminToken, sendNotificationToAll);
 
+
 module.exports = router;

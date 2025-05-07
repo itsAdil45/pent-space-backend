@@ -22,6 +22,11 @@ const {
 } = require("@/controllers/services/services.controller");
 const verifyAdminToken = require("@/middleware/veirfyAdminToken");
 
+const { likeServiceSchema } = require("@/validation/service");
+const { verify } = require("crypto");
+
+
+
 const router = express.Router();
 
 router.post(
@@ -56,4 +61,15 @@ router.delete(
   validateRequest(deleteServiceSchema),
   deleteService
 );
+
+
+
+// router.get(
+//   "/search",
+//   verifyToken,
+//   validateRequest(searchServiceSchema), 
+//   searchServices
+// );
+
+
 module.exports = router;
